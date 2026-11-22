@@ -1,37 +1,37 @@
-// The backdrop: autumn leaves floating down, plus a comic-style squirrel,
-// pumpkin and mug of hot chocolate in the bottom corners. Where things sit,
-// and which corner gets what, is picked anew each time the mod loads.
+// The backdrop, in a flat graphic style: leaves floating down, and in the
+// bottom corners a squirrel, a pumpkin and a mug of hot chocolate. No
+// outlines: form comes from flat planes of a lighter and a darker tone.
+// Where things sit, and which corner gets what, is picked anew each load.
 
-const INK = '#3b2416' // comic outline colour
-
+// Muted autumn tones, each as [light side, shaded side].
 const LEAF_COLOURS = [
-  ['#c8642c', '#8a3c17'],
-  ['#d99a2b', '#97651a'],
-  ['#9e3d22', '#5e2312'],
-  ['#e0b04a', '#9c7525'],
-  ['#b5562a', '#6e3215'],
-  ['#d4782f', '#8f4b1a'],
-  ['#8c5a2b', '#55361a'],
-  ['#a8703a', '#664321'],
-  ['#c94a2c', '#7d2a17'],
+  ['#c4693d', '#a4532e'], // terracotta
+  ['#d3a24c', '#b5853a'], // ochre
+  ['#9c4b2e', '#7f3a23'], // rust
+  ['#c98a3e', '#a96f2f'], // amber
+  ['#8b8748', '#706d38'], // olive
+  ['#b65a36', '#94472a'], // burnt sienna
+  ['#7c4a38', '#633a2c'], // umber
+  ['#d9b46a', '#bc9752'], // straw
+  ['#a8643a', '#8a502e'], // cinnamon
 ] as const
 
-// Three leaf shapes, each drawn round 0,0 in a box about 30 across.
+// Three leaf shapes, each drawn round 0,0 in a box about 30 across, stem down.
 const LEAF_SHAPES = [
   // maple
-  'M0 -15 L3 -7 L9 -10 L7 -3 L14 -2 L8 3 L11 8 L3 6 L1 11 L0 15 L-1 11 L-3 6 L-11 8 L-8 3 L-14 -2 L-7 -3 L-9 -10 L-3 -7 Z',
-  // beech, an oval with a point
-  'M0 -15 C9 -10 11 2 0 15 C-11 2 -9 -10 0 -15 Z',
-  // oak, wavy edges
-  'M0 -15 C4 -14 3 -10 6 -9 C10 -8 6 -4 9 -2 C12 0 7 3 8 6 C9 10 3 9 2 13 L0 15 L-2 13 C-3 9 -9 10 -8 6 C-7 3 -12 0 -9 -2 C-6 -4 -10 -8 -6 -9 C-3 -10 -4 -14 0 -15 Z',
+  'M0 -15 L3.5 -7.5 L9.5 -10 L7.5 -3 L14 -1.5 L8.5 3 L10.5 8 L3 6.5 L0.8 11 L0 11.5 L-0.8 11 L-3 6.5 L-10.5 8 L-8.5 3 L-14 -1.5 L-7.5 -3 L-9.5 -10 L-3.5 -7.5 Z',
+  // beech: a pointed oval
+  'M0 -15 C8.5 -9 10 2 0 12 C-10 2 -8.5 -9 0 -15 Z',
+  // oak: soft lobes
+  'M0 -15 C4.5 -14 3 -10 6.5 -9 C10.5 -8 6.5 -4 9.5 -2 C12.5 0 7.5 3 8.5 6 C9 9.5 3.5 9 1.5 12 L0 12 L-1.5 12 C-3.5 9 -9 9.5 -8.5 6 C-7.5 3 -12.5 0 -9.5 -2 C-6.5 -4 -10.5 -8 -6.5 -9 C-3 -10 -4.5 -14 0 -15 Z',
 ] as const
 
-const VEIN = 'M0 -11 L0 13'
+const STEM = 'M0 10 C0.5 13 0.2 15 -0.8 17.5'
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min)
 const round = (n: number) => Math.round(n * 10) / 10
 
-type Leaf = { x: number; y: number; size: number; shape: string; fill: string; edge: string; fall: number; delay: number; sway: number; flutter: number; isFar: boolean }
+type Leaf = { x: number; y: number; size: number; shape: string; light: string; shade: string; fall: number; delay: number; sway: number; flutter: number; isFar: boolean }
 
 function makeLeaves(count: number): Leaf[] {
   const leaves: Leaf[] = []
@@ -46,8 +46,8 @@ function makeLeaves(count: number): Leaf[] {
       y: round(rand(0, 95)),
       size: round(isFar ? rand(0.7, 1.1) : rand(1, 2.6)),
       shape: LEAF_SHAPES[i % LEAF_SHAPES.length] ?? LEAF_SHAPES[0],
-      fill: colour[0],
-      edge: colour[1],
+      light: colour[0],
+      shade: colour[1],
       fall: round(fall),
       delay: round(-rand(0, fall)),
       sway: round(rand(7, 13)),
@@ -62,104 +62,95 @@ function leafMarkup(leaf: Leaf, i: number): string {
   // Placed by percent of the window and sized in points, so leaves keep their
   // shape and spread on a wide desktop and a tall phone alike. Each rests at
   // its own height (a still scene looks finished) and falls from above the top
-  // to below the bottom around that point.
-  return `<svg x="${leaf.x}%" y="${leaf.y}%" overflow="visible"><g class="fall" style="animation:f${i} ${leaf.fall}s linear ${leaf.delay}s infinite"><g class="sway" style="animation-duration:${leaf.sway}s;animation-delay:${round(-leaf.sway * Math.random())}s"><g transform="scale(${leaf.size})"><g class="flutter${leaf.isFar ? ' far' : ''}" style="animation-duration:${leaf.flutter}s"><path d="${leaf.shape}" fill="${leaf.fill}" stroke="${leaf.edge}" stroke-width="1.6" stroke-linejoin="round"/><path d="${VEIN}" stroke="${leaf.edge}" stroke-width="1.2" fill="none" stroke-linecap="round"/></g></g></g></g></svg>`
+  // to below the bottom around that point. Two tones split at the midrib.
+  return `<svg x="${leaf.x}%" y="${leaf.y}%" overflow="visible"><g class="fall" style="animation:f${i} ${leaf.fall}s linear ${leaf.delay}s infinite"><g class="sway" style="animation-duration:${leaf.sway}s;animation-delay:${round(-leaf.sway * Math.random())}s"><g transform="scale(${leaf.size})"><g class="flutter${leaf.isFar ? ' far' : ''}" style="animation-duration:${leaf.flutter}s"><path d="${STEM}" stroke="${leaf.shade}" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="${leaf.shape}" fill="${leaf.light}"/><path d="${leaf.shape}" fill="${leaf.shade}" clip-path="url(#half)"/></g></g></g></g></svg>`
 }
 
 function leafKeyframes(leaf: Leaf, i: number): string {
   return `@keyframes f${i} { from { transform: translateY(${round(-leaf.y - 12)}%); } to { transform: translateY(${round(112 - leaf.y)}%); } }`
 }
 
-// --- comic pieces, drawn facing right in a 500 x 500 box, set in the bottom half of a 1000 x 1000 corner layer -------------
+// --- corner pieces, drawn facing right in a 500 x 500 box, set in the bottom
+// half of a 1000 x 1000 corner layer; the ground line is y 490 ---------------
 
 const SQUIRREL = `
 <g class="squirrel">
+  <ellipse cx="128" cy="490" rx="70" ry="6" fill="#5a3a26" opacity="0.14"/>
   <g class="tail">
-    <path d="M70 470 C10 460 -5 380 30 330 C55 295 105 300 110 340 C113 365 85 372 78 355 C70 335 50 350 55 380 C62 420 95 440 110 460 Z" fill="#b8642b" stroke="${INK}" stroke-width="6" stroke-linejoin="round"/>
-    <path d="M45 350 C40 380 55 410 80 430" fill="none" stroke="#e39a5a" stroke-width="7" stroke-linecap="round"/>
+    <path d="M112 486 C52 486 22 440 26 386 C30 334 70 300 116 304 C154 308 168 344 146 364 C130 378 106 368 110 350 C88 358 78 388 86 418 C94 448 116 466 140 476 Z" fill="#a9552e"/>
+    <path d="M110 350 C88 358 78 388 86 418 C94 448 116 466 140 476 L112 486 C70 470 58 430 64 396 C70 366 90 352 110 350 Z" fill="#8f4626"/>
+    <path d="M58 338 C78 316 108 312 128 326" fill="none" stroke="#c97b4c" stroke-width="7" stroke-linecap="round" opacity="0.8"/>
   </g>
-  <ellipse cx="125" cy="445" rx="45" ry="55" fill="#c9743a" stroke="${INK}" stroke-width="6"/>
-  <ellipse cx="135" cy="455" rx="24" ry="34" fill="#f2d3a8" stroke="${INK}" stroke-width="4"/>
-  <path d="M120 360 L112 330 L135 350 Z" fill="#c9743a" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
-  <path d="M150 358 L156 328 L168 356 Z" fill="#c9743a" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
-  <circle cx="145" cy="385" r="34" fill="#c9743a" stroke="${INK}" stroke-width="6"/>
-  <ellipse cx="170" cy="396" rx="15" ry="11" fill="#f2d3a8" stroke="${INK}" stroke-width="4"/>
-  <circle cx="183" cy="392" r="5" fill="${INK}"/>
-  <g class="blink">
-    <ellipse cx="155" cy="376" rx="10" ry="12" fill="#fff" stroke="${INK}" stroke-width="4"/>
-    <circle cx="158" cy="378" r="5" fill="${INK}"/>
-    <circle cx="160" cy="375" r="1.8" fill="#fff"/>
-  </g>
-  <ellipse cx="138" cy="398" rx="7" ry="4" fill="#e88a7a" opacity="0.7"/>
-  <g transform="translate(168 432) rotate(15)">
-    <ellipse cx="0" cy="8" rx="12" ry="15" fill="#b07a3a" stroke="${INK}" stroke-width="4"/>
-    <path d="M-15 -2 C-15 -14 15 -14 15 -2 Z" fill="#6e4520" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
-    <path d="M0 -10 L2 -18" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>
-    <path d="M-5 4 C-6 10 -4 15 -1 18" stroke="#e0b07a" stroke-width="3" fill="none" stroke-linecap="round"/>
-  </g>
-  <ellipse cx="155" cy="438" rx="10" ry="8" fill="#c9743a" stroke="${INK}" stroke-width="4"/>
-  <ellipse cx="180" cy="440" rx="10" ry="8" fill="#c9743a" stroke="${INK}" stroke-width="4"/>
-  <path d="M112 300 L104 286 M128 296 L128 280 M144 300 L152 286" class="pop" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>
+  <path d="M126 488 C98 488 94 446 104 414 C112 388 132 374 154 376 C178 378 188 404 186 436 C184 468 170 488 146 488 Z" fill="#b7623a"/>
+  <path d="M168 404 C182 424 182 462 162 488 L148 488 C162 462 164 430 156 408 Z" fill="#e3c39c"/>
+  <path d="M112 486 C104 456 116 434 140 436 C156 438 162 460 156 488 L118 488 Z" fill="#9d4f2c"/>
+  <path d="M146 488 C150 480 166 478 176 488 Z" fill="#9d4f2c"/>
+  <path d="M140 382 C133 352 150 330 177 330 C199 330 215 345 219 359 C214 371 198 377 181 379 C164 381 150 386 140 382 Z" fill="#b7623a"/>
+  <path d="M150 380 C162 378 176 376 190 376 C182 384 166 386 150 384 Z" fill="#e3c39c"/>
+  <circle cx="218" cy="358" r="3.5" fill="#5a3324"/>
+  <path d="M152 344 L152 310 L172 336 Z" fill="#9d4f2c"/>
+  <circle cx="186" cy="350" r="4.5" fill="#2e2018"/>
+  <path d="M174 420 C182 414 192 416 194 424 C190 430 180 430 174 426 Z" fill="#9d4f2c"/>
 </g>`
 
 const PUMPKIN = `
 <g class="pumpkin">
-  <ellipse cx="0" cy="62" rx="70" ry="9" fill="${INK}" opacity="0.18"/>
-  <ellipse cx="-30" cy="20" rx="34" ry="42" fill="#d9661e" stroke="${INK}" stroke-width="6"/>
-  <ellipse cx="30" cy="20" rx="34" ry="42" fill="#d9661e" stroke="${INK}" stroke-width="6"/>
-  <ellipse cx="0" cy="20" rx="30" ry="46" fill="#ec7f2a" stroke="${INK}" stroke-width="6"/>
-  <path d="M-42 -2 C-48 10 -48 28 -42 40" stroke="#fbb36a" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <path d="M-8 -6 C-12 8 -12 30 -8 46" stroke="#fbb36a" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.8"/>
-  <path d="M-4 -24 C-6 -36 0 -46 10 -50 L14 -42 C8 -40 6 -32 8 -24 Z" fill="#6b8a3a" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
-  <path d="M8 -36 C24 -48 40 -40 34 -28 C30 -20 20 -26 26 -32" fill="none" stroke="#6b8a3a" stroke-width="4" stroke-linecap="round"/>
-  <path d="M-14 -30 C-34 -50 -58 -36 -48 -24 C-40 -16 -24 -22 -14 -30 Z" fill="#8aa84a" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+  <ellipse cx="0" cy="60" rx="78" ry="7" fill="#5a3a26" opacity="0.14"/>
+  <ellipse cx="-34" cy="20" rx="38" ry="40" fill="#c6652f"/>
+  <ellipse cx="34" cy="20" rx="38" ry="40" fill="#b0562a"/>
+  <ellipse cx="-12" cy="20" rx="26" ry="44" fill="#d9773a"/>
+  <ellipse cx="14" cy="20" rx="26" ry="44" fill="#c6652f"/>
+  <path d="M-30 -10 C-40 4 -40 34 -30 48" stroke="#e8955a" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <path d="M-4 -22 C-6 -34 -1 -44 9 -48 L13 -41 C7 -38 5 -31 7 -22 Z" fill="#5f5a34"/>
+  <path d="M-12 -26 C-30 -46 -56 -36 -48 -22 C-40 -12 -24 -18 -12 -26 Z" fill="#7d7c45"/>
+  <path d="M-12 -26 C-24 -30 -36 -30 -48 -22 C-40 -12 -24 -18 -12 -26 Z" fill="#686838"/>
 </g>`
 
 const COCOA = `
 <g class="cocoa">
   <g class="steam">
-    <path class="s1" d="M60 330 C45 310 75 295 60 270 C48 252 70 240 62 222" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
-    <path class="s2" d="M92 325 C80 302 106 290 94 262 C86 245 102 232 96 215" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
-    <path class="s3" d="M122 332 C110 312 134 298 124 274" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+    <path class="s1" d="M70 318 C58 300 82 286 70 264 C60 246 78 236 72 220" fill="none" stroke="#fffaf2" stroke-width="5" stroke-linecap="round"/>
+    <path class="s2" d="M100 312 C90 292 112 280 102 256 C95 240 108 228 103 212" fill="none" stroke="#fffaf2" stroke-width="5" stroke-linecap="round"/>
+    <path class="s3" d="M128 320 C118 302 138 290 130 268" fill="none" stroke="#fffaf2" stroke-width="5" stroke-linecap="round"/>
   </g>
-  <ellipse cx="95" cy="488" rx="80" ry="10" fill="${INK}" opacity="0.18"/>
-  <path d="M160 385 C205 380 210 450 158 452" fill="none" stroke="${INK}" stroke-width="20" stroke-linecap="round"/>
-  <path d="M160 385 C205 380 210 450 158 452" fill="none" stroke="#b8322a" stroke-width="10" stroke-linecap="round"/>
-  <path d="M25 352 L35 470 C37 484 50 490 95 490 C140 490 153 484 155 470 L165 352 Z" fill="#c23b30" stroke="${INK}" stroke-width="6" stroke-linejoin="round"/>
-  <circle cx="60" cy="400" r="7" fill="#f6e3c4"/><circle cx="100" cy="425" r="7" fill="#f6e3c4"/><circle cx="135" cy="395" r="7" fill="#f6e3c4"/>
-  <circle cx="72" cy="455" r="7" fill="#f6e3c4"/><circle cx="125" cy="460" r="7" fill="#f6e3c4"/>
-  <path d="M42 372 L50 462" stroke="#ec6b5d" stroke-width="7" stroke-linecap="round"/>
-  <ellipse cx="95" cy="352" rx="70" ry="16" fill="#6b3a1f" stroke="${INK}" stroke-width="6"/>
-  <path d="M40 350 C50 320 70 318 80 334 C86 306 118 304 122 330 C134 316 156 326 150 350 C120 362 70 362 40 350 Z" fill="#fffaf0" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
-  <rect x="58" y="326" width="18" height="16" rx="4" fill="#f7c6cf" stroke="${INK}" stroke-width="4" transform="rotate(-12 67 334)"/>
-  <rect x="112" y="322" width="17" height="15" rx="4" fill="#fff" stroke="${INK}" stroke-width="4" transform="rotate(10 120 330)"/>
-  <path d="M86 326 C90 320 98 320 100 326" fill="none" stroke="#8a4a26" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="100" cy="490" rx="82" ry="6" fill="#5a3a26" opacity="0.14"/>
+  <path d="M166 372 C214 368 218 448 164 450" fill="none" stroke="#bda585" stroke-width="16" stroke-linecap="round"/>
+  <path d="M30 340 L36 466 C37 482 52 490 100 490 C148 490 163 482 164 466 L170 340 Z" fill="#e6d8c4"/>
+  <path d="M112 340 L170 340 L164 466 C163 482 148 490 112 490 Z" fill="#d3c1a8"/>
+  <path d="M33 404 L167 404 L166 428 L34 428 Z" fill="#b8613a"/>
+  <path d="M112 404 L167 404 L166 428 L112 428 Z" fill="#9f5131"/>
+  <ellipse cx="100" cy="340" rx="70" ry="13" fill="#f1e7d8"/>
+  <ellipse cx="100" cy="342" rx="60" ry="9" fill="#5e3624"/>
+  <path d="M118 340 L150 268" stroke="#8a4a2a" stroke-width="10" stroke-linecap="round"/>
+  <path d="M121 334 L151 266" stroke="#a7603a" stroke-width="4" stroke-linecap="round"/>
 </g>`
 
 export function makeScene(): string {
   const leaves = makeLeaves(22)
   const squirrelLeft = Math.random() < 0.5
   const pumpkinWithSquirrel = Math.random() < 0.5
-  const pumpkinX = round(rand(250, 320))
+  const pumpkinX = round(rand(260, 330))
   const pumpkinScale = round(rand(0.8, 1.05))
   const squirrelDelay = round(-rand(0, 55))
 
   // A corner layer: pinned to the bottom-left or bottom-right of any window,
   // its art drawn facing right and mirrored on the right-hand side.
   const corner = (isLeft: boolean, art: string) =>
-    `<svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="${isLeft ? 'xMinYMax' : 'xMaxYMax'} meet" overflow="hidden"><g class="comic" transform="${isLeft ? 'translate(0 500)' : 'translate(1000 500) scale(-1 1)'}">${art}</g></svg>`
+    `<svg width="100%" height="100%" viewBox="0 0 1000 1000" preserveAspectRatio="${isLeft ? 'xMinYMax' : 'xMaxYMax'} meet" overflow="hidden"><g class="art" transform="${isLeft ? 'translate(0 500)' : 'translate(1000 500) scale(-1 1)'}">${art}</g></svg>`
 
   const pumpkin = `<g transform="translate(${pumpkinX} 430) scale(${pumpkinScale})">${PUMPKIN}</g>`
   const squirrelSide = `<g style="animation-delay:${squirrelDelay}s" class="peek">${SQUIRREL}</g>${pumpkinWithSquirrel ? pumpkin : ''}`
   const cocoaSide = `<g transform="translate(10 0)">${COCOA}</g>${pumpkinWithSquirrel ? '' : pumpkin}`
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+<defs><clipPath id="half" clipPathUnits="objectBoundingBox"><rect x="0.5" y="0" width="0.5" height="1"/></clipPath></defs>
 <style>
 .sky { fill: #efe3cf; }
-.hill { fill: #e2cfb2; }
-.hill2 { fill: #d8c09d; }
-.far { opacity: 0.45; }
-.comic { opacity: 1; }
+.hill { fill: #e0ccad; }
+.hill2 { fill: #d6bf9c; }
+.hill3 { fill: #cdb48f; }
+.far { opacity: 0.4; }
+.art { opacity: 1; }
 .fall { transform-box: view-box; }
 .sway { animation: sway 10s ease-in-out infinite; }
 .flutter { animation: flutter 7s ease-in-out infinite alternate; }
@@ -167,31 +158,29 @@ export function makeScene(): string {
 @keyframes flutter { from { transform: rotate(-30deg); } to { transform: rotate(40deg); } }
 ${leaves.map(leafKeyframes).join('\n')}
 .peek { animation: peek 60s ease-in-out infinite; }
-@keyframes peek { 0%, 62% { transform: translateY(260px); } 68%, 90% { transform: translateY(0); } 96%, 100% { transform: translateY(260px); } }
-.tail { animation: tail 3s ease-in-out infinite alternate; transform-origin: 80px 460px; }
-@keyframes tail { from { transform: rotate(-4deg); } to { transform: rotate(5deg); } }
-.blink { animation: blink 7s infinite; transform-origin: 155px 376px; }
-@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
-.pop { opacity: 0; animation: pop 60s infinite; animation-delay: inherit; }
-@keyframes pop { 0%, 67% { opacity: 0; } 69%, 72% { opacity: 1; } 75%, 100% { opacity: 0; } }
-.steam path { opacity: 0.6; animation: steam 7s ease-in-out infinite; }
-.steam .s2 { animation-delay: -2.3s; }
-.steam .s3 { animation-delay: -4.6s; }
-@keyframes steam { 0% { opacity: 0; transform: translateY(20px); } 40% { opacity: 0.75; } 100% { opacity: 0; transform: translateY(-30px); } }
+@keyframes peek { 0%, 60% { transform: translateY(260px); } 70%, 90% { transform: translateY(0); } 98%, 100% { transform: translateY(260px); } }
+.tail { animation: tail 4s ease-in-out infinite alternate; transform-origin: 112px 486px; }
+@keyframes tail { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+.steam path { opacity: 0.5; animation: steam 8s ease-in-out infinite; }
+.steam .s2 { animation-delay: -2.7s; }
+.steam .s3 { animation-delay: -5.3s; }
+@keyframes steam { 0% { opacity: 0; transform: translateY(20px); } 40% { opacity: 0.6; } 100% { opacity: 0; transform: translateY(-30px); } }
 @media (prefers-color-scheme: dark) {
   .sky { fill: #1e1611; }
   .hill { fill: #2a1f17; }
-  .hill2 { fill: #33261c; }
+  .hill2 { fill: #32251b; }
+  .hill3 { fill: #3a2b20; }
   .far { opacity: 0.25; }
-  .comic { opacity: 0.85; }
+  .art { opacity: 0.82; }
   .steam path { stroke: #e8dccb; }
 }
 </style>
 <rect class="sky" width="100%" height="100%"/>
 ${leaves.map(leafMarkup).join('\n')}
 <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-<path class="hill2" d="M0 90 Q20 84 45 89 T100 87 V100 H0 Z"/>
-<path class="hill" d="M0 94 Q30 89 55 93 T100 92 V100 H0 Z"/>
+<path class="hill3" d="M0 87 Q18 82 40 86 T80 84 T100 85 V100 H0 Z"/>
+<path class="hill2" d="M0 90 Q22 86 48 90 T100 88 V100 H0 Z"/>
+<path class="hill" d="M0 94 Q30 90 56 93 T100 92 V100 H0 Z"/>
 </svg>
 ${corner(squirrelLeft, squirrelSide)}
 ${corner(!squirrelLeft, cocoaSide)}
