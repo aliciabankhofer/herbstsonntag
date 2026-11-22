@@ -1,0 +1,5 @@
+{
+  "name": "herbstsonntag",
+  "owner": { "name": "aliciabankhofer" },
+  "plugins": [{ "name": "herbstsonntag", "source": "./" }]
+}
