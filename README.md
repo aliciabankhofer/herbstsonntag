@@ -22,4 +22,4 @@ claude plugin install herbstsonntag --marketplace aliciabankhofer/herbstsonntag
 
 In the desktop app: click + next to the prompt box, then Plugins, Add marketplace with `aliciabankhofer/herbstsonntag`, then Add plugin.
 
-This repository is private: installing needs read access on GitHub and a git credential for github.com on your machine (an SSH key, or `gh auth login` then `gh auth setup-git`).
+No account or setup needed to install: the repository is public.
