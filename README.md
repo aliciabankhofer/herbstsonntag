@@ -1,6 +1,6 @@
 # Herbstsonntag 🍂
 
-A lowkey autumn Sunday mod for Claude Code: warm oat-and-pumpkin colours (chestnut and lamplight in dark mode), a few leaves drifting down the edges of the window, an optional fireside ambience, gentle mood lines in the status bar, a tea-break nudge every 50 minutes, and a `/herbst` command that suggests a tiny three-step Sunday plan (German by default, `/herbst en` for English).
+A lowkey autumn Sunday mod for Claude Code: warm oat-and-pumpkin colours (chestnut and lamplight in dark mode), comic-style autumn leaves floating slowly down the window (a squirrel peeks up now and then beside a pumpkin, across from a steaming mug of hot chocolate), an optional fireside ambience, gentle mood lines in the status bar, a tea-break nudge every 50 minutes, and a `/herbst` command that suggests a tiny three-step Sunday plan (German by default, `/herbst en` for English).
 
 The colours, leaves and sound show in the Claude desktop and mobile apps; the status line, tea nudge and `/herbst` also work in the terminal. Turn the sound on with the speaker icon in the session's title bar.
 

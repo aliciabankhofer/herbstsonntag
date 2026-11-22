@@ -1,6 +1,7 @@
 import type { Register, ThemeSetArgs } from 'claude-code'
 
 import { makeColors } from './make-colors.js'
+import { makeScene } from './scene'
 
 // Oat-and-pumpkin by day, chestnut and lamplight by night.
 const { theme, problems } = makeColors({
@@ -33,40 +34,8 @@ const { theme, problems } = makeColors({
   },
 })
 
-// A few leaves drifting down the edges, slowly; the middle stays clear for words.
-const LEAF = 'M0 -14 C8 -10 10 -2 0 14 C-10 -2 -8 -10 0 -14 Z'
-const leaves = [
-  { x: 6, c: '#c8642c', d: 38, delay: 0, s: 1.1 },
-  { x: 14, c: '#d99a2b', d: 46, delay: -12, s: 0.8 },
-  { x: 22, c: '#9e3d22', d: 52, delay: -30, s: 1.0 },
-  { x: 78, c: '#d4782f', d: 42, delay: -6, s: 0.9 },
-  { x: 86, c: '#b5562a', d: 50, delay: -22, s: 1.2 },
-  { x: 94, c: '#e0b04a', d: 44, delay: -35, s: 0.75 },
-]
-const SCENE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
-<style>
-.sky { fill: #efe3cf; }
-.hill { fill: #e2cfb2; }
-.leaf { opacity: 0.55; }
-@keyframes fall { from { transform: translateY(-10px) rotate(0deg); } to { transform: translateY(110px) rotate(320deg); } }
-@keyframes sway { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
-.drift { animation: sway 9s ease-in-out infinite; }
-.spin { animation: fall linear infinite; transform-box: fill-box; transform-origin: center; }
-@media (prefers-color-scheme: dark) {
-  .sky { fill: #1e1611; }
-  .hill { fill: #2a1f17; }
-  .leaf { opacity: 0.35; }
-}
-</style>
-<rect class="sky" width="100" height="100"/>
-<path class="hill" d="M0 88 Q25 80 50 86 T100 84 V100 H0 Z"/>
-${leaves
-  .map(
-    (l, i) =>
-      `<g class="drift" style="animation-delay:${-i * 1.5}s"><g transform="translate(${l.x} ${10 + i * 13})"><g class="spin" style="animation-duration:${l.d}s;animation-delay:${l.delay}s"><path class="leaf" fill="${l.c}" transform="scale(${l.s * 0.25})" d="${LEAF}"/></g></g></g>`,
-  )
-  .join('\n')}
-</svg>`
+// Floating leaves, a peeking squirrel, a pumpkin and hot chocolate: hooks/scene.ts.
+const SCENE = makeScene()
 
 const BASE: ThemeSetArgs = { colors: theme, backdrop: { scene: 'leaves' } }
 
@@ -214,6 +183,6 @@ export const register: Register = on => {
     }
     const { Svg } = $.ui.resolve(e)
 
-    return <Svg source={SCENE} alt="A few autumn leaves drifting down past a soft hill" />
+    return <Svg source={SCENE} alt="Autumn leaves floating down; a comic squirrel peeks up beside a pumpkin, across from a steaming mug of hot chocolate" />
   })
 }
