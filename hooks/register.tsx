@@ -183,6 +183,6 @@ export const register: Register = on => {
     }
     const { Svg } = $.ui.resolve(e)
 
-    return <Svg source={SCENE} alt="Autumn leaves floating down; a squirrel peeks up beside a pumpkin, across from a steaming mug of hot chocolate" />
+    return <Svg source={SCENE} alt="Autumn leaves floating down; a squirrel peeks up near a pumpkin" />
   })
 }

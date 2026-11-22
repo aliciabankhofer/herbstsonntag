@@ -1,5 +1,5 @@
 // The backdrop, in a flat graphic style: leaves floating down, and in the
-// bottom corners a squirrel, a pumpkin and a mug of hot chocolate. No
+// bottom corners a squirrel and a pumpkin. No
 // outlines: form comes from flat planes of a lighter and a darker tone.
 // Where things sit, and which corner gets what, is picked anew each load.
 
@@ -106,30 +106,11 @@ const PUMPKIN = `
   <path d="M-12 -26 C-24 -30 -36 -30 -48 -22 C-40 -12 -24 -18 -12 -26 Z" fill="#686838"/>
 </g>`
 
-const COCOA = `
-<g class="cocoa">
-  <g class="steam">
-    <path class="s1" d="M70 318 C58 300 82 286 70 264 C60 246 78 236 72 220" fill="none" stroke="#fffaf2" stroke-width="5" stroke-linecap="round"/>
-    <path class="s2" d="M100 312 C90 292 112 280 102 256 C95 240 108 228 103 212" fill="none" stroke="#fffaf2" stroke-width="5" stroke-linecap="round"/>
-    <path class="s3" d="M128 320 C118 302 138 290 130 268" fill="none" stroke="#fffaf2" stroke-width="5" stroke-linecap="round"/>
-  </g>
-  <ellipse cx="100" cy="490" rx="82" ry="6" fill="#5a3a26" opacity="0.14"/>
-  <path d="M166 372 C214 368 218 448 164 450" fill="none" stroke="#bda585" stroke-width="16" stroke-linecap="round"/>
-  <path d="M30 340 L36 466 C37 482 52 490 100 490 C148 490 163 482 164 466 L170 340 Z" fill="#e6d8c4"/>
-  <path d="M112 340 L170 340 L164 466 C163 482 148 490 112 490 Z" fill="#d3c1a8"/>
-  <path d="M33 404 L167 404 L166 428 L34 428 Z" fill="#b8613a"/>
-  <path d="M112 404 L167 404 L166 428 L112 428 Z" fill="#9f5131"/>
-  <ellipse cx="100" cy="340" rx="70" ry="13" fill="#f1e7d8"/>
-  <ellipse cx="100" cy="342" rx="60" ry="9" fill="#5e3624"/>
-  <path d="M118 340 L150 268" stroke="#8a4a2a" stroke-width="10" stroke-linecap="round"/>
-  <path d="M121 334 L151 266" stroke="#a7603a" stroke-width="4" stroke-linecap="round"/>
-</g>`
-
 export function makeScene(): string {
   const leaves = makeLeaves(22)
   const squirrelLeft = Math.random() < 0.5
   const pumpkinWithSquirrel = Math.random() < 0.5
-  const pumpkinX = round(rand(260, 330))
+  const pumpkinX = round(pumpkinWithSquirrel ? rand(260, 330) : rand(90, 160))
   const pumpkinScale = round(rand(0.8, 1.05))
   const squirrelDelay = round(-rand(0, 55))
 
@@ -140,7 +121,7 @@ export function makeScene(): string {
 
   const pumpkin = `<g transform="translate(${pumpkinX} 430) scale(${pumpkinScale})">${PUMPKIN}</g>`
   const squirrelSide = `<g style="animation-delay:${squirrelDelay}s" class="peek">${SQUIRREL}</g>${pumpkinWithSquirrel ? pumpkin : ''}`
-  const cocoaSide = `<g transform="translate(10 0)">${COCOA}</g>${pumpkinWithSquirrel ? '' : pumpkin}`
+  const otherSide = pumpkinWithSquirrel ? '' : pumpkin
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
 <defs><clipPath id="half" clipPathUnits="objectBoundingBox"><rect x="0.5" y="0" width="0.5" height="1"/></clipPath></defs>
@@ -161,10 +142,6 @@ ${leaves.map(leafKeyframes).join('\n')}
 @keyframes peek { 0%, 60% { transform: translateY(260px); } 70%, 90% { transform: translateY(0); } 98%, 100% { transform: translateY(260px); } }
 .tail { animation: tail 4s ease-in-out infinite alternate; transform-origin: 112px 486px; }
 @keyframes tail { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
-.steam path { opacity: 0.5; animation: steam 8s ease-in-out infinite; }
-.steam .s2 { animation-delay: -2.7s; }
-.steam .s3 { animation-delay: -5.3s; }
-@keyframes steam { 0% { opacity: 0; transform: translateY(20px); } 40% { opacity: 0.6; } 100% { opacity: 0; transform: translateY(-30px); } }
 @media (prefers-color-scheme: dark) {
   .sky { fill: #1e1611; }
   .hill { fill: #2a1f17; }
@@ -172,7 +149,6 @@ ${leaves.map(leafKeyframes).join('\n')}
   .hill3 { fill: #3a2b20; }
   .far { opacity: 0.25; }
   .art { opacity: 0.82; }
-  .steam path { stroke: #e8dccb; }
 }
 </style>
 <rect class="sky" width="100%" height="100%"/>
@@ -183,6 +159,6 @@ ${leaves.map(leafMarkup).join('\n')}
 <path class="hill" d="M0 94 Q30 90 56 93 T100 92 V100 H0 Z"/>
 </svg>
 ${corner(squirrelLeft, squirrelSide)}
-${corner(!squirrelLeft, cocoaSide)}
+${otherSide ? corner(!squirrelLeft, otherSide) : ''}
 </svg>`
 }
